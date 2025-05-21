@@ -16,8 +16,16 @@ def agpAlpha = "8.11.0-alpha10"
 
 // https://mvnrepository.com/artifact/com.android.tools.build/gradle
 def agpVersions = [
-    agpStable,
-    agpAlpha,
+        "8.7.3",
+        "8.8.0",
+        "8.8.1",
+        "8.8.2",
+        "8.9.0",
+        "8.9.1",
+        "8.9.2",
+        "8.9.3",
+        agpStable,
+        agpAlpha,
 ]
 
 dependencies {
