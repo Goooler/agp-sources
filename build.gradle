@@ -10,7 +10,7 @@ plugins {
  * 3) Check changeset into source control
  */
 
-def agpStable = "8.10.0"
+def agpStable = "8.12.0-alpha01"
 // Alpha versions will be updated by Renovate automatically like the stable ones.
 def agpAlpha = "8.11.0-alpha10"
 
