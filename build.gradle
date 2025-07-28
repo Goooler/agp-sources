@@ -49,7 +49,7 @@ dependencies {
     compileOnly "com.android.tools.build:apksig:$agpAlpha"
 
     add(shared.name, gradleApi())
-    add(shared.name, 'org.jetbrains.kotlin:kotlin-stdlib:2.2.0')
+    add(shared.name, 'org.jetbrains.kotlin:kotlin-stdlib:2.2.20-Beta1')
 }
 
 // anchor task
