@@ -1,4 +1,5 @@
 import org.gradle.api.attributes.java.TargetJvmEnvironment
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id 'java'
@@ -50,6 +51,16 @@ dependencies {
     compileOnly "com.android.tools.build:apksig:$agpAlpha"
 
     add(shared.name, gradleApi())
+}
+
+// Don't compile AGP sources, we just view them.
+tasks.named('compileJava', JavaCompile).configure {
+    source = sourceSets.main.java
+}
+
+// Don't compile AGP sources, we just view them.
+tasks.named('compileKotlin', KotlinCompile).configure {
+    source = sourceSets.main.java
 }
 
 // anchor task
