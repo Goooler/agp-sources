@@ -2,6 +2,7 @@ import org.gradle.api.attributes.java.TargetJvmEnvironment
 
 plugins {
     id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '2.2.0'
 }
 
 /**
@@ -20,11 +21,35 @@ def agpVersions = [
     agpAlpha,
 ]
 
+// Match all directories that look like version numbers, e.g. 8.11.1, 8.13.0-alpha02.
+def versionDirPattern = ~/^\d+\.\d+\.\d+(-alpha\d+)?$/
+
+rootDir.listFiles()
+        .findAll { it.isDirectory() && it.name ==~ versionDirPattern }
+        .each { dir ->
+            sourceSets.create(dir.name) {
+                java.srcDir dir
+            }
+        }
+
+def shared = configurations.create('shared') {
+    canBeResolved = true
+    description = "Shared configuration for all source sets."
+}
+
+configurations.configureEach {
+    if (it.name != shared.name) {
+        it.extendsFrom(shared)
+    }
+}
+
 dependencies {
     // Use different artifact to make sure the stable and alpha versions could be updated by Renovate automatically.
     compileOnly "com.android.tools.build:gradle-api:$agpStable"
     // apksig is followed by the same version as AGP.
     compileOnly "com.android.tools.build:apksig:$agpAlpha"
+
+    add(shared.name, gradleApi())
 }
 
 // anchor task
