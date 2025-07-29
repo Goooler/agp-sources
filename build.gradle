@@ -12,7 +12,7 @@ plugins {
  * 3) Check changeset into source control
  */
 
-def agpStable = "8.11.1"
+def agpStable = "8.13.0-alpha02"
 // Divider for Renovate updates.
 def agpAlpha = "8.13.0-alpha02"
 
