@@ -92,13 +92,11 @@ agpVersions.forEach { agpVersion ->
 
   // create a task dedicated to extracting sources for that version
   def agpDumpSources = tasks.register("dump${agpVersion}Sources") {
-    // This should be deferred to support CC.
-    def agpConfigurationProvider = configurations.named("agp${agpVersion}")
-    inputs.files agpConfigurationProvider
+    inputs.files configurations.getByName("agp${agpVersion}")
     outputs.dir "$agpVersion/"
 
     doLast {
-      def componentIds = agpConfigurationProvider.get()
+      def componentIds = configurations.getByName("agp${agpVersion}")
         .incoming
         .resolutionResult
         .allDependencies
