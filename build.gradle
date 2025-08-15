@@ -102,17 +102,22 @@ agpVersions.forEach { agpVersion ->
   // create a task dedicated to extracting sources for that version
   def agpDumpSources = tasks.register("dump${agpVersion}Sources", Copy) {
     description = "Dumps AGP $agpVersion sources."
-    def resolved = result.resolvedComponents.collect { component ->
-      component.getArtifacts(SourcesArtifact).findAll { it instanceof ResolvedArtifactResult }.collect { ar ->
-        def id = ar.id.componentIdentifier
-        zipTree(ar.file).matching {
-          includeEmptyDirs = false
-          eachFile { fcp ->
-            fcp.path = "${id.group}/${id.module}/${fcp.path}"
+    // Ensure we return a flat list of file trees to avoid repeated path rewriting
+    def resolved = result.resolvedComponents.collectMany { component ->
+      component.getArtifacts(SourcesArtifact)
+        .findAll { it instanceof ResolvedArtifactResult }
+        .collect { ResolvedArtifactResult ar ->
+          def id = ar.id.componentIdentifier
+          zipTree(ar.file).matching {
+            includeEmptyDirs = false
+            eachFile { fcp ->
+              fcp.path = "${id.group}/${id.module}/${fcp.path}"
+            }
           }
         }
-      }
     }
+    // Avoid failures on duplicate entries across multiple artifacts
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from(resolved)
     into(layout.buildDirectory.dir(agpVersion))
   }
