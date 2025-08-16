@@ -74,11 +74,11 @@ tasks.withType<KotlinCompile>().configureEach {
   enabled = false
 }
 
-// Anchor task
+// Anchor task.
 val dumpSources by tasks.registering
 
 agpVersions.forEach { agpVersion ->
-  // create configuration for specific version of AGP
+  // Create configuration for specific version of AGP.
   val agpConfiguration = configurations.create("agp$agpVersion") {
     // TODO: https://github.com/google/guava/issues/6801
     //  Fix `Cannot choose between the following variants of com.google.guava:guava:33.3.1-jre: androidRuntimeElements, jreRuntimeElements`.
@@ -90,12 +90,12 @@ agpVersions.forEach { agpVersion ->
     }
   }
 
-  // add that version of AGP as a dependency to this configuration
+  // Add that version of AGP as a dependency to this configuration.
   agpConfiguration.dependencies.add(
     dependencies.create("com.android.tools.build:gradle:$agpVersion")
   )
 
-  // create a task dedicated to extracting sources for that version
+  // Create a task dedicated to extracting sources for that version.
   val agpDumpSources = tasks.register<Copy>("dump${agpVersion}Sources") {
     inputs.files(agpConfiguration)
     into(agpVersion)
@@ -131,7 +131,7 @@ agpVersions.forEach { agpVersion ->
     }
   }
 
-  // hook anchor task to all version-specific tasks
+  // Hook anchor task to all version-specific tasks.
   dumpSources.configure {
     dependsOn(agpDumpSources)
   }
