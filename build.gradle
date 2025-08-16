@@ -15,7 +15,7 @@ plugins {
 
 def agpStable = "8.12.0"
 // Divider for Renovate updates.
-def agpAlpha = "9.0.0-alpha01"
+def agpAlpha = "8.13.0-alpha04"
 
 // https://mvnrepository.com/artifact/com.android.tools.build/gradle
 def agpVersions = [
@@ -50,11 +50,6 @@ def agpStableDependencies = configurations.detachedConfiguration(
 )
 
 dependencies {
-  // Use different artifact to make sure the stable and alpha versions could be updated by Renovate automatically.
-  compileOnly "com.android.tools.build:gradle-api:$agpStable"
-  // apksig is followed by the same version as AGP.
-  compileOnly "com.android.tools.build:apksig:$agpAlpha"
-
   add(shared.name, gradleApi())
 
   // Add all AGP dependencies but the AGP itself.
