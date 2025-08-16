@@ -96,41 +96,38 @@ agpVersions.forEach { agpVersion ->
   )
 
   // create a task dedicated to extracting sources for that version
-  val agpDumpSources = tasks.register("dump${agpVersion}Sources") {
+  val agpDumpSources = tasks.register<Copy>("dump${agpVersion}Sources") {
     inputs.files(agpConfiguration)
-    outputs.dir(agpVersion)
+    into(agpVersion)
 
-    doLast {
-      val componentIds = agpConfiguration
-        .incoming
-        .resolutionResult
-        .allDependencies
-        .filterIsInstance<DefaultResolvedDependencyResult>()
-        .filter { (it.selected.id as ModuleComponentIdentifier).group.startsWith("com.android.tools") }
-        .map { it.selected.id }
-        .toSet()
+    val componentIds = agpConfiguration
+      .incoming
+      .resolutionResult
+      .allDependencies
+      .filterIsInstance<DefaultResolvedDependencyResult>()
+      .filter { (it.selected.id as ModuleComponentIdentifier).group.startsWith("com.android.tools") }
+      .map { it.selected.id }
+      .toSet()
 
-      val result = dependencies.createArtifactResolutionQuery()
-        .forComponents(componentIds)
-        .withArtifacts(JvmLibrary::class.java, SourcesArtifact::class.java)
-        .execute()
+    val result = dependencies.createArtifactResolutionQuery()
+      .forComponents(componentIds)
+      .withArtifacts(JvmLibrary::class.java, SourcesArtifact::class.java)
+      .execute()
 
-      result.resolvedComponents.forEach { component ->
-        component.getArtifacts(SourcesArtifact::class.java)
-          .filterIsInstance<ResolvedArtifactResult>()
-          .forEach { ar ->
-            logger.lifecycle("Found ${ar.file}.")
-            val id = ar.id.componentIdentifier as ModuleComponentIdentifier
-            val group = id.group
-            val module = id.module
-            logger.lifecycle("Extracting to $agpVersion/$group/$module.")
-            copy {
-              from(zipTree(ar.file))
-              into(file("$agpVersion/$group/$module"))
-            }
-            logger.lifecycle("Done extracting $module.")
+    result.resolvedComponents.forEach { component ->
+      component.getArtifacts(SourcesArtifact::class.java)
+        .filterIsInstance<ResolvedArtifactResult>()
+        .forEach { ar ->
+          logger.lifecycle("Found ${ar.file}.")
+          val id = ar.id.componentIdentifier as ModuleComponentIdentifier
+          val group = id.group
+          val module = id.module
+          logger.lifecycle("Extracting to $agpVersion/$group/$module.")
+          from(zipTree(ar.file)) {
+            into("$group/$module")
           }
-      }
+          logger.lifecycle("Done extracting $module.")
+        }
     }
   }
 
