@@ -1,3 +1,6 @@
+@file:Suppress("UnstableApiUsage")
+
+import org.gradle.api.internal.artifacts.result.DefaultResolvedDependencyResult
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -99,33 +102,32 @@ agpVersions.forEach { agpVersion ->
         .incoming
         .resolutionResult
         .allDependencies
-//        .filter { it.selected.id.group.startsWith("com.android.tools") }
-//        .map { it.selected.id }
+        .filterIsInstance<DefaultResolvedDependencyResult>()
+        .filter { (it.selected.id as ModuleComponentIdentifier).group.startsWith("com.android.tools") }
+        .map { it.selected.id }
         .toSet()
-//
-//      val result = dependencies.createArtifactResolutionQuery()
-//        .forComponents(componentIds)
-//        .withArtifacts(JvmLibrary::class.java, SourcesArtifact::class.java)
-//        .execute()
-//
-//      result.resolvedComponents.forEach { component ->
-//        val sources = component.getArtifacts(SourcesArtifact::class.java)
-//        sources.forEach { ar ->
-//          println("Found ${ar.file}.")
-//          if (ar is ResolvedArtifactResult) {
-//            val id = ar.id.componentIdentifier
-//            val group = id.group
-//            val module = id.module
-//            val version = id.version
-//            println("Extracting to $agpVersion/$group/$module.")
-//            copy {
-//              from(zipTree(ar.file))
-//              into(file("$agpVersion/$group/$module"))
-//            }
-//            println("Done extracting $module.")
-//          }
-//        }
-//      }
+
+      val result = dependencies.createArtifactResolutionQuery()
+        .forComponents(componentIds)
+        .withArtifacts(JvmLibrary::class.java, SourcesArtifact::class.java)
+        .execute()
+
+      result.resolvedComponents.forEach { component ->
+        component.getArtifacts(SourcesArtifact::class.java)
+          .filterIsInstance<ResolvedArtifactResult>()
+          .forEach { ar ->
+            logger.lifecycle("Found ${ar.file}.")
+            val id = ar.id.componentIdentifier as ModuleComponentIdentifier
+            val group = id.group
+            val module = id.module
+            logger.lifecycle("Extracting to $agpVersion/$group/$module.")
+            copy {
+              from(zipTree(ar.file))
+              into(file("$agpVersion/$group/$module"))
+            }
+            logger.lifecycle("Done extracting $module.")
+          }
+      }
     }
   }
 
