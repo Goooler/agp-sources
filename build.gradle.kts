@@ -24,12 +24,14 @@ val agpVersions = listOf(
 )
 
 // Match all directories that look like version numbers, e.g. 8.11.1, 8.13.0-alpha02.
-val versionDirPattern = Regex("""^\d+\.\d+\.\d+(-alpha\d+)?$""")
+val versionDirPattern = """
+  ^\d+\.\d+\.\d+(-alpha\d+)?$
+""".trimIndent().toRegex()
 
-rootDir.listFiles()
-  ?.filter { it.isDirectory && versionDirPattern.matches(it.name) }
-  ?.forEach { dir ->
-    sourceSets.create(dir.name) {
+rootDir.listFiles().orEmpty()
+  .filter { it.isDirectory && versionDirPattern.matches(it.name) }
+  .forEach { dir ->
+    sourceSets.register(dir.name) {
       java.srcDir(dir)
     }
   }
@@ -40,6 +42,7 @@ val shared by configurations.registering {
 }
 
 configurations.configureEach {
+  // Share dependencies between all source sets.
   if (name != shared.name) {
     extendsFrom(shared.get())
   }
@@ -71,7 +74,7 @@ tasks.withType<KotlinCompile>().configureEach {
   enabled = false
 }
 
-// anchor task
+// Anchor task
 val dumpSources by tasks.registering
 
 agpVersions.forEach { agpVersion ->
