@@ -33,6 +33,7 @@ val agpGroupPrefix = "com.android.tools"
 
 dependencies {
   shared(gradleApi())
+  shared(kotlin("gradle-plugin"))
 
   // Add all AGP dependencies but the AGP itself.
   configurations.detachedConfiguration(create(stable.agp.get()))
