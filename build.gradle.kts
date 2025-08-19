@@ -27,6 +27,11 @@ configurations.configureEach {
   if (name != shared.name) {
     extendsFrom(shared.get())
   }
+  resolutionStrategy.eachDependency {
+    if (requested.group == "org.jetbrains.kotlin") {
+      useVersion(embeddedKotlinVersion)
+    }
+  }
 }
 
 val agpGroupPrefix = "com.android.tools"
