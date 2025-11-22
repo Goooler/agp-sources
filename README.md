@@ -9,12 +9,12 @@ Want latest sources? Check out Google's main [dev branch][agp_main]!
 
 To pull a new version:
 
-* Update AGP versions in `gradle/*.versions.toml`
-* Run
-  ```sh
-  ./gradlew dumpSources
-  ```
-* Check the changeset into source control.
+1. Update AGP versions in `gradle/*.versions.toml`
+2. Run
+    ```sh
+    ./gradlew dumpSources
+    ```
+3. Check the changeset into source control.
 
 The `dumpSources` Gradle task will automatically download AGP and its transitive dependencies from
 the Google repository and unzip them from your local Gradle cache directory.
