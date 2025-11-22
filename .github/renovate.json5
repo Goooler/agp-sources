@@ -13,10 +13,7 @@
     },
     {
       matchPackagePatterns: '.*',
-      matchUpdateTypes: [
-        'minor',
-        'patch',
-      ],
+      allowedVersions: '/^[0-9]+\\.[0-9]+(\\.[0-9]+)?$/',
       automerge: true,
       automergeStrategy: 'rebase',
     },
