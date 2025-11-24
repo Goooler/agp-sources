@@ -22,7 +22,6 @@ jobs:
           rm -rf *-beta* # Remove the last beta version sources.
           ./gradlew build dumpSources
       - uses: peter-evans/create-pull-request@v7
-        # TODO: add `github.event.repository.fork == false` check back after https://github.com/jrodbx/agp-sources/pull/9 is merged.
         if: github.ref == 'refs/heads/master'
         with:
           commit-message: |
