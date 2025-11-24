@@ -19,7 +19,7 @@
       automergeStrategy: 'rebase',
     },
     {
-      allowedVersions: '/^[0-9]+\\.[0-9]+(\\.[0-9]+)?$/',
+      allowedVersions: '/^v?[0-9]+(\\.[0-9]+){0,2}$/',
       automerge: true,
       automergeStrategy: 'rebase',
       matchPackageNames: [
