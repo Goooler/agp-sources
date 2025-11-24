@@ -5,11 +5,7 @@
   ],
   ignoreUnstable: false,
   packageRules: [
-    // Enable auto-merge for minor/patch updates.
     {
-      matchPackagePatterns: [
-        '.*'
-      ],
       matchUpdateTypes: [
         'minor',
         'patch',
@@ -17,6 +13,9 @@
       matchCurrentVersion: '!/^0/',
       automerge: true,
       automergeStrategy: 'rebase',
+      matchPackageNames: [
+        '/.*/',
+      ],
     },
     {
       allowedVersions: '/^v?[0-9]+(\\.[0-9]+){0,2}$/',
