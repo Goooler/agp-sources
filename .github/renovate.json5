@@ -5,13 +5,18 @@
   ],
   ignoreUnstable: false,
   packageRules: [
+    // Enable auto-merge for minor/patch updates.
     {
+      matchPackagePatterns: [
+        '.*'
+      ],
       matchUpdateTypes: [
-        'major',
+        'minor',
+        'patch',
       ],
-      matchPackageNames: [
-        '/.*/',
-      ],
+      matchCurrentVersion: '!/^0/',
+      automerge: true,
+      automergeStrategy: 'rebase',
     },
     {
       allowedVersions: '/^[0-9]+\\.[0-9]+(\\.[0-9]+)?$/',
@@ -26,24 +31,18 @@
         'gradle/stable.versions.toml',
       ],
       allowedVersions: '/^[0-9]+\\.[0-9]+(\\.[0-9]+)?$/',
-      automerge: true,
-      automergeStrategy: 'rebase',
     },
     {
       matchFileNames: [
         'gradle/alpha.versions.toml',
       ],
       allowedVersions: '/.*-alpha.*/',
-      automerge: true,
-      automergeStrategy: 'rebase',
     },
     {
       matchFileNames: [
         'gradle/beta.versions.toml',
       ],
       allowedVersions: '/.*-beta.*/',
-      automerge: true,
-      automergeStrategy: 'rebase',
     },
   ],
 }
