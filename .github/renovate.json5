@@ -5,6 +5,7 @@
   ],
   ignoreUnstable: false,
   packageRules: [
+    // Enable auto-merge for minor/patch updates.
     {
       matchUpdateTypes: [
         'minor',
