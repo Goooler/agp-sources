@@ -44,5 +44,11 @@
       ],
       allowedVersions: '/.*-beta.*/',
     },
+    {
+      matchFileNames: [
+        'gradle/rc.versions.toml',
+      ],
+      allowedVersions: '/.*-rc.*/',
+    },
   ],
 }

@@ -20,6 +20,7 @@ jobs:
       - run: |
           rm -rf *-alpha* # Remove the last alpha version sources.
           rm -rf *-beta* # Remove the last beta version sources.
+          rm -rf *-rc* # Remove the last rc version sources.
           ./gradlew build dumpSources
       - uses: peter-evans/create-pull-request@v7
         if: github.ref == 'refs/heads/master'
