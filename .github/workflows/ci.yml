@@ -12,10 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-java@v5
-        with:
-          distribution: 'zulu'
-          java-version: 25
       - uses: gradle/actions/setup-gradle@v5
       - run: ./gradlew build
 
@@ -25,10 +21,6 @@ jobs:
     if: github.repository == 'Goooler/agp-sources' && github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-java@v5
-        with:
-          distribution: 'zulu'
-          java-version: 25
       - uses: gradle/actions/setup-gradle@v5
       - name: Remove outdated sources and dump new sources
         run: |
