@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 pluginManagement {
   repositories {
     mavenCentral()
@@ -25,8 +27,8 @@ dependencyResolutionManagement {
     create("rc") {
       from(files("gradle/rc.versions.toml"))
     }
-    create("stable") {
-      from(files("gradle/stable.versions.toml"))
+    create("final") {
+      from(files("gradle/final.versions.toml"))
     }
   }
 }

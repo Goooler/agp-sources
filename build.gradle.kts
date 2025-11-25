@@ -42,7 +42,7 @@ dependencies {
   shared(kotlin("gradle-plugin"))
 
   // Add all AGP dependencies but the AGP itself.
-  configurations.detachedConfiguration(create(stable.agp.get()))
+  configurations.detachedConfiguration(create(final.agp.get()))
     .resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
       with(artifact.moduleVersion.id) {
         if (group.startsWith(agpGroupPrefix)) return@forEach
@@ -56,10 +56,10 @@ val dumpSources by tasks.registering
 
 // https://mvnrepository.com/artifact/com.android.tools.build/gradle
 listOf(
-  stable.agp,
   alpha.agp,
   beta.agp,
   rc.agp,
+  final.agp,
 ).forEach { agp ->
   val agpVersion = requireNotNull(agp.get().version)
   // Create configuration for specific version of AGP.

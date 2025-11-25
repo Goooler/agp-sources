@@ -17,7 +17,8 @@ jobs:
           distribution: 'zulu'
           java-version: 25
       - uses: gradle/actions/setup-gradle@v5
-      - run: |
+      - name: Remove outdated sources and dump new sources
+        run: |
           rm -rf *-alpha* # Remove the last alpha version sources.
           rm -rf *-beta* # Remove the last beta version sources.
           rm -rf *-rc* # Remove the last rc version sources.

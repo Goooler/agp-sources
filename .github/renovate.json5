@@ -28,12 +28,6 @@
     },
     {
       matchFileNames: [
-        'gradle/stable.versions.toml',
-      ],
-      allowedVersions: '/^[0-9]+\\.[0-9]+(\\.[0-9]+)?$/',
-    },
-    {
-      matchFileNames: [
         'gradle/alpha.versions.toml',
       ],
       allowedVersions: '/.*-alpha.*/',
@@ -49,6 +43,12 @@
         'gradle/rc.versions.toml',
       ],
       allowedVersions: '/.*-rc.*/',
+    },
+    {
+      matchFileNames: [
+        'gradle/final.versions.toml',
+      ],
+      allowedVersions: '/^[0-9]+\\.[0-9]+(\\.[0-9]+)?$/',
     },
   ],
 }
