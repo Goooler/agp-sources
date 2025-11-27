@@ -1,4 +1,4 @@
-@file:Suppress("UnstableApiUsage")
+@file:Suppress("UnstableApiUsage", "ConvertCallChainIntoSequence")
 
 plugins {
   kotlin("jvm") version embeddedKotlinVersion
@@ -20,15 +20,12 @@ rootDir.listFiles().orEmpty()
     }
   }
 
-val shared by configurations.registering {
-  isCanBeResolved = true
-  description = "Shared configuration for all source sets."
-}
+val compileOnly by configurations.getting
 
 configurations.configureEach {
-  // Share dependencies between all source sets.
-  if (name != shared.name) {
-    extendsFrom(shared.get())
+  if (name != compileOnly.name) {
+    // Share compileOnly dependencies for all source sets.
+    extendsFrom(compileOnly)
   }
   resolutionStrategy.eachDependency {
     if (requested.group == kotlinGroup) {
@@ -38,15 +35,15 @@ configurations.configureEach {
 }
 
 dependencies {
-  shared(gradleApi())
-  shared(kotlin("gradle-plugin"))
+  compileOnly(gradleApi())
+  compileOnly(kotlin("gradle-plugin"))
 
   // Add all AGP dependencies but the AGP itself.
   configurations.detachedConfiguration(create(final.agp.get()))
     .resolvedConfiguration.resolvedArtifacts.forEach { artifact ->
       with(artifact.moduleVersion.id) {
         if (group.startsWith(agpGroupPrefix)) return@forEach
-        shared("$group:$name:$version")
+        compileOnly("$group:$name:$version")
       }
     }
 }
@@ -87,10 +84,10 @@ listOf(
     dependencies
       .createArtifactResolutionQuery()
       .forComponents(componentIds)
-      .withArtifacts(JvmLibrary::class.java, SourcesArtifact::class.java)
+      .withArtifacts(JvmLibrary::class, SourcesArtifact::class)
       .execute()
       .resolvedComponents
-      .flatMap { it.getArtifacts(SourcesArtifact::class.java) }
+      .flatMap { it.getArtifacts(SourcesArtifact::class) }
       .filterIsInstance<ResolvedArtifactResult>()
       .forEach {
         logger.lifecycle("Found sources jar: ${it.file}")
@@ -102,7 +99,7 @@ listOf(
   }
 
   // Hook anchor task to all version-specific tasks.
-  dumpSources.configure {
+  dumpSources {
     dependsOn(dumpSingleAgpSources)
   }
 }
