@@ -15,6 +15,7 @@
 
 package com.android.build.gradle.internal.coverage.tasks
 
+import com.android.build.gradle.internal.coverage.renderer.CodeCoverageReportOrchestrator
 import com.android.build.gradle.internal.scope.InternalArtifactType
 import com.android.build.gradle.internal.scope.InternalMultipleArtifactType
 import com.android.build.gradle.internal.tasks.BuildAnalyzer
@@ -46,9 +47,13 @@ abstract class CodeCoverageReportTask: NonIncrementalGlobalTask() {
 
     override fun doTaskAction() {
         val inputDirectories: List<File> = coverageXmlReports.get().map { it.asFile }
-        val reportDir = htmlReportDir.get().asFile
 
-        // TODO: Parse XMLs, generate data classes to be used for HTML Report Generation.
+        CodeCoverageReportOrchestrator.orchestrate(
+            inputDirectories,
+            htmlReportDir,
+            project.rootProject.name,
+            project.rootProject.rootDir
+        )
     }
 
     class AggregatedCoverageReportCreationAction(
