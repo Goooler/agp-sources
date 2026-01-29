@@ -1,5 +1,7 @@
 @file:Suppress("UnstableApiUsage", "ConvertCallChainIntoSequence")
 
+import java.io.Serializable
+
 plugins {
   kotlin("jvm") version embeddedKotlinVersion
 }
@@ -58,48 +60,85 @@ listOf(
   rc.agp,
   final.agp,
 ).forEach { agp ->
-  val agpVersion = requireNotNull(agp.get().version)
-  // Create configuration for specific version of AGP.
-  val agpConfiguration = configurations.create("agp$agpVersion")
-  // Add that version of AGP as a dependency to this configuration.
-  agpConfiguration.dependencies.add(dependencies.create(agp.get()))
+  val dependency = agp.get()
+  val version = requireNotNull(dependency.version)
+  val configuration = configurations.create("agp$version}") { dependencies.add(dependency) }
 
-  // Create a task dedicated to extracting sources for that version.
-  val dumpSingleAgpSources = tasks.register<Copy>("dump${agpVersion}Sources") {
-    inputs.files(agpConfiguration)
-    into(layout.projectDirectory.dir(agpVersion))
-    // There should be no duplicates in sources, so fail if any are found.
-    duplicatesStrategy = DuplicatesStrategy.FAIL
+  val dumpSingleAgpSources = tasks.register<DumpSingleAgpSources>("dump${version}Sources") {
+    outputDirectory = layout.projectDirectory.dir(version)
+    inputSources = provider {
+      val componentIds = configuration
+        .incoming
+        .resolutionResult
+        .allDependencies
+        .filterIsInstance<ResolvedDependencyResult>()
+        .map { it.selected.id }
+        .filterIsInstance<ModuleComponentIdentifier>()
+        .filter { it.group.startsWith(agpGroupPrefix) }
+        .toSet()
 
-    val componentIds = agpConfiguration
-      .incoming
-      .resolutionResult
-      .allDependencies
-      .filterIsInstance<ResolvedDependencyResult>()
-      .map { it.selected.id }
-      .filterIsInstance<ModuleComponentIdentifier>()
-      .filter { it.group.startsWith(agpGroupPrefix) }
-      .toSet()
-
-    dependencies
-      .createArtifactResolutionQuery()
-      .forComponents(componentIds)
-      .withArtifacts(JvmLibrary::class, SourcesArtifact::class)
-      .execute()
-      .resolvedComponents
-      .flatMap { it.getArtifacts(SourcesArtifact::class) }
-      .filterIsInstance<ResolvedArtifactResult>()
-      .forEach {
-        logger.lifecycle("Found sources jar: ${it.file}")
-        val id = it.id.componentIdentifier as ModuleComponentIdentifier
-        from(zipTree(it.file)) {
-          into("${id.group}/${id.module}")
+      dependencies
+        .createArtifactResolutionQuery()
+        .forComponents(componentIds)
+        .withArtifacts(JvmLibrary::class, SourcesArtifact::class)
+        .execute()
+        .resolvedComponents
+        .flatMap { it.getArtifacts(SourcesArtifact::class) }
+        .filterIsInstance<ResolvedArtifactResult>()
+        .map {
+          val id = it.id.componentIdentifier as ModuleComponentIdentifier
+          Resolved(
+            group = id.group,
+            module = id.module,
+            file = it.file,
+          )
         }
-      }
+    }
   }
 
   // Hook anchor task to all version-specific tasks.
   dumpSources {
     dependsOn(dumpSingleAgpSources)
+  }
+}
+
+/**
+ * Serializable copy of [ResolvedArtifactResult] for CC support.
+ */
+data class Resolved(
+  val group: String,
+  val module: String,
+  val file: File,
+) : Serializable
+
+/**
+ * Replacement of [Copy], which defers the source and destination configurations.
+ */
+abstract class DumpSingleAgpSources : DefaultTask() {
+  @get:Inject
+  protected abstract val archiveOperations: ArchiveOperations
+
+  @get:Inject
+  protected abstract val fileSystemOperations: FileSystemOperations
+
+  @get:Input
+  abstract val inputSources: ListProperty<Resolved>
+
+  @get:OutputDirectory
+  abstract val outputDirectory: DirectoryProperty
+
+  @TaskAction
+  fun dump() {
+    inputSources.get().forEach { resolved ->
+      logger.lifecycle("Extracting: $resolved")
+
+      fileSystemOperations.copy {
+        // There should be no duplicates in sources, so fail if any are found.
+        duplicatesStrategy = DuplicatesStrategy.FAIL
+
+        from(archiveOperations.zipTree(resolved.file))
+        into(outputDirectory.get().asFile.resolve("${resolved.group}/${resolved.module}"))
+      }
+    }
   }
 }
