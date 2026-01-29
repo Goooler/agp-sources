@@ -92,18 +92,18 @@ listOf(
         .flatMap { it.getArtifacts(SourcesArtifact::class) }
         .filterIsInstance<ResolvedArtifactResult>()
 
-      // Copy sources at execution time
-      sourceArtifacts.forEach { artifact ->
-        logger.lifecycle("Found sources jar: ${artifact.file}")
-        val id = artifact.id.componentIdentifier as ModuleComponentIdentifier
-        val targetDir = outputDir.asFile.resolve("${id.group}/${id.module}")
-        
-        copy {
-          from(zipTree(artifact.file))
-          into(targetDir)
-          // There should be no duplicates in sources, so fail if any are found.
-          duplicatesStrategy = DuplicatesStrategy.FAIL
+      // Copy all sources at execution time with proper duplicate detection
+      copy {
+        sourceArtifacts.forEach { artifact ->
+          logger.lifecycle("Found sources jar: ${artifact.file}")
+          val id = artifact.id.componentIdentifier as ModuleComponentIdentifier
+          from(zipTree(artifact.file)) {
+            into("${id.group}/${id.module}")
+          }
         }
+        into(outputDir)
+        // There should be no duplicates in sources, so fail if any are found.
+        duplicatesStrategy = DuplicatesStrategy.FAIL
       }
     }
   }
