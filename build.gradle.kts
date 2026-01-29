@@ -62,8 +62,6 @@ listOf(
   val agpVersion = requireNotNull(dependency.version)
 
   val agpConfiguration = configurations.create("agp$agpVersion}") {
-    isCanBeConsumed = false
-    isCanBeResolved = true
     dependencies.add(dependency)
   }
 
