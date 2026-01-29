@@ -49,7 +49,10 @@ dependencies {
 }
 
 // Anchor task.
-val dumpSources by tasks.registering
+val dumpSources by tasks.registering {
+  group = "documentation"
+  description = "Extracts source code for all AGP versions"
+}
 
 // https://mvnrepository.com/artifact/com.android.tools.build/gradle
 listOf(
@@ -66,6 +69,8 @@ listOf(
 
   // Create a task dedicated to extracting sources for that version.
   val dumpSingleAgpSources = tasks.register("dump${agpVersion}Sources") {
+    group = "documentation"
+    description = "Extracts source code for AGP version $agpVersion"
     inputs.files(agpConfiguration)
     val outputDir = layout.projectDirectory.dir(agpVersion)
     outputs.dir(outputDir)
