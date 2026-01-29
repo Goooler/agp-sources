@@ -1,5 +1,7 @@
 @file:Suppress("UnstableApiUsage", "ConvertCallChainIntoSequence")
 
+import java.io.Serializable
+
 plugins {
   kotlin("jvm") version embeddedKotlinVersion
 }
@@ -65,13 +67,9 @@ listOf(
     dependencies.add(dependency)
   }
 
-  val dumpSingleAgpSources = tasks.register<Copy>("dump${agpVersion}Sources") {
-    inputs.files(agpConfiguration)
-    into(layout.projectDirectory.dir(agpVersion))
-    // There should be no duplicates in sources, so fail if any are found.
-    duplicatesStrategy = DuplicatesStrategy.FAIL
-
-    val sourcesProvider = provider {
+  val dumpSingleAgpSources = tasks.register<DumpSingleAgpSources>("dump${agpVersion}Sources") {
+    outputDirectory = layout.projectDirectory.dir(agpVersion)
+    inputSources = provider {
       val componentIds = agpConfiguration
         .incoming
         .resolutionResult
@@ -90,21 +88,59 @@ listOf(
         .resolvedComponents
         .flatMap { it.getArtifacts(SourcesArtifact::class) }
         .filterIsInstance<ResolvedArtifactResult>()
-    }
-
-    doFirst {
-      sourcesProvider.get().forEach {
-        logger.lifecycle("Found sources jar: ${it.file}")
-        val id = it.id.componentIdentifier as ModuleComponentIdentifier
-        from(zipTree(it.file)) {
-          into("${id.group}/${id.module}")
+        .map {
+          val id = it.id.componentIdentifier as ModuleComponentIdentifier
+          Resolved(
+            group = id.group,
+            module = id.module,
+            file = it.file,
+          )
         }
-      }
     }
   }
 
   // Hook anchor task to all version-specific tasks.
   dumpSources {
     dependsOn(dumpSingleAgpSources)
+  }
+}
+
+/**
+ * Serializable copy of [ResolvedArtifactResult] for CC support.
+ */
+data class Resolved(
+  val group: String,
+  val module: String,
+  val file: File,
+) : Serializable
+
+abstract class DumpSingleAgpSources : DefaultTask() {
+  @get:Inject
+  protected abstract val archiveOperations: ArchiveOperations
+
+  @get:Inject
+  protected abstract val fileSystemOperations: FileSystemOperations
+
+  @get:Input
+  abstract val inputSources: ListProperty<Resolved>
+
+  @get:OutputDirectory
+  abstract val outputDirectory: DirectoryProperty
+
+  @TaskAction
+  fun dump() {
+    val destDir = outputDirectory.get().asFile
+
+    inputSources.get().forEach { resolved ->
+      logger.lifecycle("Extracting: $resolved")
+
+      fileSystemOperations.copy {
+        // There should be no duplicates in sources, so fail if any are found.
+        duplicatesStrategy = DuplicatesStrategy.FAIL
+
+        from(archiveOperations.zipTree(resolved.file))
+        into(destDir.resolve("${resolved.group}/${resolved.module}"))
+      }
+    }
   }
 }
