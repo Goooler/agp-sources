@@ -61,16 +61,12 @@ listOf(
   final.agp,
 ).forEach { agp ->
   val dependency = agp.get()
-  val agpVersion = requireNotNull(dependency.version)
+  val version = requireNotNull(dependency.version)
 
-  val agpConfiguration = configurations.create("agp$agpVersion}") {
-    dependencies.add(dependency)
-  }
-
-  val dumpSingleAgpSources = tasks.register<DumpSingleAgpSources>("dump${agpVersion}Sources") {
-    outputDirectory = layout.projectDirectory.dir(agpVersion)
+  val dumpSingleAgpSources = tasks.register<DumpSingleAgpSources>("dump${version}Sources") {
+    outputDirectory = layout.projectDirectory.dir(version)
     inputSources = provider {
-      val componentIds = agpConfiguration
+      val componentIds = configurations.create("agp$version}") { dependencies.add(dependency) }
         .incoming
         .resolutionResult
         .allDependencies
@@ -114,6 +110,9 @@ data class Resolved(
   val file: File,
 ) : Serializable
 
+/**
+ * Replacement of [Copy], which defers the source and destination configurations.
+ */
 abstract class DumpSingleAgpSources : DefaultTask() {
   @get:Inject
   protected abstract val archiveOperations: ArchiveOperations
@@ -129,8 +128,6 @@ abstract class DumpSingleAgpSources : DefaultTask() {
 
   @TaskAction
   fun dump() {
-    val destDir = outputDirectory.get().asFile
-
     inputSources.get().forEach { resolved ->
       logger.lifecycle("Extracting: $resolved")
 
@@ -139,7 +136,7 @@ abstract class DumpSingleAgpSources : DefaultTask() {
         duplicatesStrategy = DuplicatesStrategy.FAIL
 
         from(archiveOperations.zipTree(resolved.file))
-        into(destDir.resolve("${resolved.group}/${resolved.module}"))
+        into(outputDirectory.get().asFile.resolve("${resolved.group}/${resolved.module}"))
       }
     }
   }
