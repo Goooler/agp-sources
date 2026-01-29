@@ -71,7 +71,6 @@ listOf(
   val dumpSingleAgpSources = tasks.register("dump${agpVersion}Sources") {
     group = "documentation"
     description = "Extracts source code for AGP version $agpVersion"
-    inputs.files(agpConfiguration)
     val outputDir = layout.projectDirectory.dir(agpVersion)
     outputs.dir(outputDir)
 
