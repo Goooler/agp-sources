@@ -58,44 +58,51 @@ listOf(
   rc.agp,
   final.agp,
 ).forEach { agp ->
-  val agpVersion = requireNotNull(agp.get().version)
-  // Create configuration for specific version of AGP.
-  val agpConfiguration = configurations.create("agp$agpVersion")
-  // Add that version of AGP as a dependency to this configuration.
-  agpConfiguration.dependencies.add(dependencies.create(agp.get()))
+  val dependency = agp.get()
+  val agpVersion = requireNotNull(dependency.version)
 
-  // Create a task dedicated to extracting sources for that version.
+  val agpConfiguration = configurations.create("agp$agpVersion}") {
+    isCanBeConsumed = false
+    isCanBeResolved = true
+    dependencies.add(dependency)
+  }
+
   val dumpSingleAgpSources = tasks.register<Copy>("dump${agpVersion}Sources") {
     inputs.files(agpConfiguration)
     into(layout.projectDirectory.dir(agpVersion))
     // There should be no duplicates in sources, so fail if any are found.
     duplicatesStrategy = DuplicatesStrategy.FAIL
 
-    val componentIds = agpConfiguration
-      .incoming
-      .resolutionResult
-      .allDependencies
-      .filterIsInstance<ResolvedDependencyResult>()
-      .map { it.selected.id }
-      .filterIsInstance<ModuleComponentIdentifier>()
-      .filter { it.group.startsWith(agpGroupPrefix) }
-      .toSet()
+    val sourcesProvider = provider {
+      val componentIds = agpConfiguration
+        .incoming
+        .resolutionResult
+        .allDependencies
+        .filterIsInstance<ResolvedDependencyResult>()
+        .map { it.selected.id }
+        .filterIsInstance<ModuleComponentIdentifier>()
+        .filter { it.group.startsWith(agpGroupPrefix) }
+        .toSet()
 
-    dependencies
-      .createArtifactResolutionQuery()
-      .forComponents(componentIds)
-      .withArtifacts(JvmLibrary::class, SourcesArtifact::class)
-      .execute()
-      .resolvedComponents
-      .flatMap { it.getArtifacts(SourcesArtifact::class) }
-      .filterIsInstance<ResolvedArtifactResult>()
-      .forEach {
+      dependencies
+        .createArtifactResolutionQuery()
+        .forComponents(componentIds)
+        .withArtifacts(JvmLibrary::class, SourcesArtifact::class)
+        .execute()
+        .resolvedComponents
+        .flatMap { it.getArtifacts(SourcesArtifact::class) }
+        .filterIsInstance<ResolvedArtifactResult>()
+    }
+
+    doFirst {
+      sourcesProvider.get().forEach {
         logger.lifecycle("Found sources jar: ${it.file}")
         val id = it.id.componentIdentifier as ModuleComponentIdentifier
         from(zipTree(it.file)) {
           into("${id.group}/${id.module}")
         }
       }
+    }
   }
 
   // Hook anchor task to all version-specific tasks.
