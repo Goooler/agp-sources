@@ -106,14 +106,15 @@ listOf(
  * Serializable copy of [ResolvedArtifactResult] for CC support.
  */
 data class Resolved(
-  val group: String,
-  val module: String,
-  val file: File,
+  @Input val group: String,
+  @Input val module: String,
+  @InputFile @get:PathSensitive(PathSensitivity.RELATIVE) val file: File,
 ) : Serializable
 
 /**
  * Replacement of [Copy], which defers the source and destination configurations.
  */
+@CacheableTask
 abstract class DumpSingleAgpSources : DefaultTask() {
   @get:Inject
   protected abstract val archiveOperations: ArchiveOperations
@@ -121,7 +122,7 @@ abstract class DumpSingleAgpSources : DefaultTask() {
   @get:Inject
   protected abstract val fileSystemOperations: FileSystemOperations
 
-  @get:Input
+  @get:Nested
   abstract val inputSources: ListProperty<Resolved>
 
   @get:OutputDirectory
