@@ -62,11 +62,12 @@ listOf(
 ).forEach { agp ->
   val dependency = agp.get()
   val version = requireNotNull(dependency.version)
+  val configuration = configurations.create("agp$version}") { dependencies.add(dependency) }
 
   val dumpSingleAgpSources = tasks.register<DumpSingleAgpSources>("dump${version}Sources") {
     outputDirectory = layout.projectDirectory.dir(version)
     inputSources = provider {
-      val componentIds = configurations.create("agp$version}") { dependencies.add(dependency) }
+      val componentIds = configuration
         .incoming
         .resolutionResult
         .allDependencies
