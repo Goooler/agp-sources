@@ -12,11 +12,11 @@ To pull a new version:
 1. Update AGP versions in `gradle/*.versions.toml`
 2. Run
     ```sh
-    ./gradlew dumpSources
+    ./gradlew dumpAgpSources
     ```
 3. Check the changeset into source control.
 
-The `dumpSources` Gradle task will automatically download AGP and its transitive dependencies from
+The `dumpAgpSources` Gradle task will automatically download AGP and its transitive dependencies from
 the Google repository and unzip them from your local Gradle cache directory.
 
 From there, use your favorite diff tool to easily examine changes across versions:

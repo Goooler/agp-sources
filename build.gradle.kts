@@ -51,7 +51,10 @@ dependencies {
 }
 
 // Anchor task.
-val dumpSources by tasks.registering
+val dumpAgpSources by tasks.registering {
+  group = "documentation"
+  description = "Dumps given AGP sources"
+}
 
 // https://mvnrepository.com/artifact/com.android.tools.build/gradle
 listOf(
@@ -64,7 +67,7 @@ listOf(
   val version = requireNotNull(dependency.version)
   val configuration = configurations.create("agp$version}") { dependencies.add(dependency) }
 
-  val dumpSingleAgpSources = tasks.register<DumpSingleAgpSources>("dump${version}Sources") {
+  val dumpSources = tasks.register<DumpSources>("dump${version}Sources") {
     outputDirectory = layout.projectDirectory.dir(version)
     inputSources = provider {
       val componentIds = configuration
@@ -97,8 +100,8 @@ listOf(
   }
 
   // Hook anchor task to all version-specific tasks.
-  dumpSources {
-    dependsOn(dumpSingleAgpSources)
+  dumpAgpSources {
+    dependsOn(dumpSources)
   }
 }
 
@@ -115,7 +118,7 @@ data class Resolved(
  * Replacement of [Copy], which defers the source and destination configurations.
  */
 @CacheableTask
-abstract class DumpSingleAgpSources : DefaultTask() {
+abstract class DumpSources : DefaultTask() {
   @get:Inject
   protected abstract val archiveOperations: ArchiveOperations
 
@@ -127,6 +130,11 @@ abstract class DumpSingleAgpSources : DefaultTask() {
 
   @get:OutputDirectory
   abstract val outputDirectory: DirectoryProperty
+
+  init {
+    group = "documentation"
+    description = "Dumps sources into the output directory"
+  }
 
   @TaskAction
   fun dump() {

@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: gradle/actions/setup-gradle@v5
-      - run: ./gradlew build dumpSources
+      - run: ./gradlew build dumpAgpSources
 
   dump-sources:
     runs-on: ubuntu-latest
@@ -27,7 +27,7 @@ jobs:
           rm -rf *-alpha* # Remove the last alpha version sources.
           rm -rf *-beta* # Remove the last beta version sources.
           rm -rf *-rc* # Remove the last rc version sources.
-          ./gradlew dumpSources
+          ./gradlew dumpAgpSources
       - uses: actions/create-github-app-token@v2
         id: app-token
         with:
