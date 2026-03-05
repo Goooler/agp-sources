@@ -29,11 +29,6 @@ configurations.configureEach {
     // Share compileOnly dependencies for all source sets.
     extendsFrom(compileOnly)
   }
-  resolutionStrategy.eachDependency {
-    if (requested.group == kotlinGroup) {
-      useVersion(embeddedKotlinVersion)
-    }
-  }
 }
 
 dependencies {
