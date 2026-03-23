@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v6
       - run: ./gradlew build dumpAgpSources
 
   dump-sources:
@@ -21,7 +21,7 @@ jobs:
     if: github.repository == 'Goooler/agp-sources' && github.ref == 'refs/heads/master'
     steps:
       - uses: actions/checkout@v6
-      - uses: gradle/actions/setup-gradle@v5
+      - uses: gradle/actions/setup-gradle@v6
       - name: Remove outdated sources and dump new sources
         run: |
           rm -rf *-alpha* # Remove the last alpha version sources.
