@@ -19,7 +19,7 @@ val versionDirs = rootDir.listFiles().orEmpty()
 
 sourceSets {
   versionDirs.forEach { dir ->
-    sourceSets.register(dir.name) {
+    register(dir.name) {
       java.srcDir(dir)
     }
   }
