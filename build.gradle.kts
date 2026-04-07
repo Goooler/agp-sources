@@ -8,7 +8,6 @@ plugins {
 }
 
 val agpGroupPrefix = "com.android.tools"
-val kotlinGroup = "org.jetbrains.kotlin"
 
 // Match all directories that look like version numbers, e.g. 8.11.1, 8.13.0-alpha02, 9.0.0-beta01, and 8.13.0-rc02.
 val versionDirPattern = """
