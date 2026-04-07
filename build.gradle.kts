@@ -18,26 +18,25 @@ val versionDirPattern = """
 val versionDirs = rootDir.listFiles().orEmpty()
   .filter { it.isDirectory && versionDirPattern.matches(it.name) }
 
-versionDirs.forEach { dir ->
-  sourceSets.register(dir.name) {
-    java.srcDir(dir)
+sourceSets {
+  versionDirs.forEach { dir ->
+    sourceSets.register(dir.name) {
+      java.srcDir(dir)
+    }
   }
 }
 
 idea {
   module {
-    // Each version dir stores sources as <group>/<module>/<package-path>, so register
-    // all <group>/<module> subdirectories as source roots so that IDEA resolves package
-    // names correctly and code navigation works.
+    // Each version dir stores sources as <group>/<module>/<package-path>, so register all <group>/<module>
+    // subdirectories as source roots so that IDEA resolves package names correctly and code navigation works.
     versionDirs.forEach { versionDir ->
       versionDir.listFiles().orEmpty()
         .filter { it.isDirectory }
         .forEach { groupDir ->
           groupDir.listFiles().orEmpty()
             .filter { it.isDirectory }
-            .forEach { moduleDir ->
-              sourceDirs.add(moduleDir)
-            }
+            .forEach { moduleDir -> sourceDirs.add(moduleDir) }
         }
     }
   }
