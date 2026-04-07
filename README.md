@@ -1,6 +1,6 @@
-# agp-sources
+# AGP Sources
 
-Contains the per-release bundled sources to the Android Gradle Plugin, useful for general Android development and
+Contains the per-release bundled sources to the **Android Gradle Plugin**, useful for general Android development and
 pointing to open Google issues.
 
 Want latest sources? Check out Google's main [dev branch][agp_main]!
