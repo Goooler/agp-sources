@@ -17,36 +17,21 @@ val versionDirPattern = """
 val versionDirs = rootDir.listFiles().orEmpty()
   .filter { it.isDirectory && versionDirPattern.matches(it.name) }
 
-sourceSets {
-  versionDirs.forEach { dir ->
-    register(dir.name) {
-      java.srcDir(dir)
-    }
-  }
-}
-
 idea {
   module {
     // Each version dir stores sources as <group>/<module>/<package-path>, so register all <group>/<module>
     // subdirectories as source roots so that IDEA resolves package names correctly and code navigation works.
     versionDirs.forEach { versionDir ->
       versionDir.listFiles().orEmpty()
-        .filter { it.isDirectory }
-        .forEach { groupDir ->
-          groupDir.listFiles().orEmpty()
-            .filter { it.isDirectory }
-            .forEach { moduleDir -> sourceDirs.add(moduleDir) }
+        .filter(File::isDirectory)
+        .forEach {
+          it.listFiles().orEmpty()
+            .filter(File::isDirectory)
+            .forEach { artifactDir ->
+              sourceDirs.add(artifactDir)
+            }
         }
     }
-  }
-}
-
-val compileOnly by configurations.getting
-
-configurations.configureEach {
-  if (name != compileOnly.name) {
-    // Share compileOnly dependencies for all source sets.
-    extendsFrom(compileOnly)
   }
 }
 
