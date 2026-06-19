@@ -50,7 +50,7 @@ dependencies {
 }
 
 // Anchor task.
-val dumpAgpSources by tasks.registering {
+val dumpAgpSources = tasks.register("dumpAgpSources") {
   group = "documentation"
   description = "Dumps given AGP sources"
 }
