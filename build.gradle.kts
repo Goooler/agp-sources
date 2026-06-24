@@ -116,13 +116,10 @@ data class Resolved(
  * Replacement of [Copy], which defers the source and destination configurations.
  */
 @CacheableTask
-abstract class DumpSources : DefaultTask() {
-  @get:Inject
-  protected abstract val archiveOperations: ArchiveOperations
-
-  @get:Inject
-  protected abstract val fileSystemOperations: FileSystemOperations
-
+abstract class DumpSources @Inject constructor(
+  private val archiveOperations: ArchiveOperations,
+  private val fileSystemOperations: FileSystemOperations,
+) : DefaultTask() {
   @get:Nested
   abstract val inputSources: ListProperty<Resolved>
 
