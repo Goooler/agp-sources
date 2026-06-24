@@ -20,12 +20,6 @@
     },
     {
       matchFileNames: [
-        'gradle/beta.versions.toml',
-      ],
-      allowedVersions: '/.*-beta.*/',
-    },
-    {
-      matchFileNames: [
         'gradle/rc.versions.toml',
       ],
       allowedVersions: '/.*-rc.*/',

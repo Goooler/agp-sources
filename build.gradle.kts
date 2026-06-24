@@ -9,9 +9,9 @@ plugins {
 
 val agpGroupPrefix = "com.android.tools"
 
-// Match all directories that look like version numbers, e.g. 8.11.1, 8.13.0-alpha02, 9.0.0-beta01, and 8.13.0-rc02.
+// Match all directories that look like version numbers, e.g. 8.11.1, 8.13.0-alpha02, and 8.13.0-rc02.
 val versionDirPattern = """
-  ^\d+\.\d+\.\d+(-(?:alpha|beta|rc)\d+)?$
+  ^\d+\.\d+\.\d+(-(?:alpha|rc)\d+)?$
 """.trimIndent().toRegex()
 
 val versionDirs = rootDir.listFiles().orEmpty()
@@ -58,7 +58,6 @@ val dumpAgpSources = tasks.register("dumpAgpSources") {
 // https://mvnrepository.com/artifact/com.android.tools.build/gradle
 listOf(
   alpha.agp,
-  beta.agp,
   rc.agp,
   final.agp,
 ).forEach { agp ->
