@@ -88,7 +88,7 @@ listOf(
         .filterIsInstance<ResolvedArtifactResult>()
         .map {
           val id = it.id.componentIdentifier as ModuleComponentIdentifier
-          Resolved(
+          DumpSources.Resolved(
             group = id.group,
             module = id.module,
             file = it.file,
@@ -102,15 +102,6 @@ listOf(
     dependsOn(dumpSources)
   }
 }
-
-/**
- * Serializable copy of [ResolvedArtifactResult] for CC support.
- */
-data class Resolved(
-  @Input val group: String,
-  @Input val module: String,
-  @InputFile @get:PathSensitive(PathSensitivity.RELATIVE) val file: File,
-) : Serializable
 
 /**
  * Replacement of [Copy], which defers the source and destination configurations.
@@ -145,4 +136,13 @@ abstract class DumpSources @Inject constructor(
       }
     }
   }
+
+  /**
+   * Serializable copy of [ResolvedArtifactResult] for CC support.
+   */
+  data class Resolved(
+    @Input val group: String,
+    @Input val module: String,
+    @InputFile @get:PathSensitive(PathSensitivity.RELATIVE) val file: File,
+  ) : Serializable
 }
