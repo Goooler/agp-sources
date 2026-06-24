@@ -63,9 +63,12 @@ listOf(
 ).forEach { agp ->
   val dependency = agp.get()
   val version = requireNotNull(dependency.version)
-  val configuration = configurations.create("agp$version}") { dependencies.add(dependency) }
+  val configuration = configurations.create("agp-$version") { dependencies.add(dependency) }
 
-  val dumpSources = tasks.register<DumpSources>("dump${version}Sources") {
+  val dumpSources = tasks.register<DumpSources>("dump-$version-sources") {
+    group = "documentation"
+    description = "Dumps AGP $version sources into the output directory"
+
     outputDirectory = layout.projectDirectory.dir(version)
     inputSources = provider {
       val componentIds = configuration
@@ -116,11 +119,6 @@ abstract class DumpSources @Inject constructor(
 
   @get:OutputDirectory
   abstract val outputDirectory: DirectoryProperty
-
-  init {
-    group = "documentation"
-    description = "Dumps sources into the output directory"
-  }
 
   @TaskAction
   fun dump() {
