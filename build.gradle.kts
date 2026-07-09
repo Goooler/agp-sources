@@ -19,19 +19,13 @@ val versionDirs = rootDir.listFiles().orEmpty()
 
 idea {
   module {
+    fun list(file: File): List<File> = file.listFiles().orEmpty().filter(File::isDirectory)
+
     // Each version dir stores sources as <group>/<module>/<package-path>, so register all <group>/<module>
     // subdirectories as source roots so that IDEA resolves package names correctly and code navigation works.
-    versionDirs.forEach { versionDir ->
-      versionDir.listFiles().orEmpty()
-        .filter(File::isDirectory)
-        .forEach {
-          it.listFiles().orEmpty()
-            .filter(File::isDirectory)
-            .forEach { artifactDir ->
-              sourceDirs.add(artifactDir)
-            }
-        }
-    }
+    sourceDirs.addAll(
+      versionDirs.flatMap { versionDir -> list(versionDir).flatMap(::list) }
+    )
   }
 }
 
