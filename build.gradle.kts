@@ -108,7 +108,7 @@ abstract class DumpSources @Inject constructor(
   private val archiveOperations: ArchiveOperations,
   private val fileSystemOperations: FileSystemOperations,
 ) : DefaultTask() {
-  @get:Nested
+  @get:Input
   abstract val inputSources: ListProperty<Resolved>
 
   @get:OutputDirectory
@@ -133,8 +133,8 @@ abstract class DumpSources @Inject constructor(
    * Serializable copy of [ResolvedArtifactResult] for CC support.
    */
   data class Resolved(
-    @Input val group: String,
-    @Input val module: String,
-    @InputFile @get:PathSensitive(PathSensitivity.RELATIVE) val file: File,
+    val group: String,
+    val module: String,
+    val file: File,
   ) : Serializable
 }
