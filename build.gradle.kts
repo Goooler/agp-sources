@@ -26,7 +26,6 @@ rootDir.listFiles().orEmpty()
     }
   }
 
-
 dependencies {
   compileOnly(gradleApi())
 
