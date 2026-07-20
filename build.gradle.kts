@@ -13,22 +13,19 @@ val versionDirPattern = """
   ^\d+\.\d+\.\d+(-(?:alpha|rc)\d+)?$
 """.trimIndent().toRegex()
 
+val compileOnly = configurations.compileOnly
+
 rootDir.listFiles().orEmpty()
   .filter { it.isDirectory && versionDirPattern.matches(it.name) }
   .forEach { dir ->
     sourceSets.register(dir.name) {
       java.srcDir(dir)
+      configurations.named(compileOnlyConfigurationName).configure {
+        extendsFrom(compileOnly)
+      }
     }
   }
 
-val compileOnly = configurations.named("compileOnly")
-
-configurations.configureEach {
-  if (name != compileOnly.name) {
-    // Share compileOnly dependencies for all source sets.
-    extendsFrom(configurations.compileOnly)
-  }
-}
 
 dependencies {
   compileOnly(gradleApi())
