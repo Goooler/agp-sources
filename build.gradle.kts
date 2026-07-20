@@ -31,7 +31,6 @@ idea {
 
 dependencies {
   compileOnly(gradleApi())
-  compileOnly(kotlin("gradle-plugin"))
 
   // Add all AGP dependencies but the AGP itself.
   configurations.detachedConfiguration(create(final.agp.get()))
