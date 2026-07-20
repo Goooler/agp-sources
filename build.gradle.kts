@@ -4,7 +4,6 @@ import java.io.Serializable
 
 plugins {
   kotlin("jvm") version embeddedKotlinVersion
-  idea
 }
 
 val agpGroupPrefix = "com.android.tools"
@@ -14,20 +13,18 @@ val versionDirPattern = """
   ^\d+\.\d+\.\d+(-(?:alpha|rc)\d+)?$
 """.trimIndent().toRegex()
 
-val versionDirs = rootDir.listFiles().orEmpty()
+val compileOnly = configurations.compileOnly
+
+rootDir.listFiles().orEmpty()
   .filter { it.isDirectory && versionDirPattern.matches(it.name) }
-
-idea {
-  module {
-    fun list(file: File): List<File> = file.listFiles().orEmpty().filter(File::isDirectory)
-
-    // Each version dir stores sources as <group>/<module>/<package-path>, so register all <group>/<module>
-    // subdirectories as source roots so that IDEA resolves package names correctly and code navigation works.
-    sourceDirs.addAll(
-      versionDirs.flatMap { versionDir -> list(versionDir).flatMap(::list) }
-    )
+  .forEach { dir ->
+    sourceSets.register(dir.name) {
+      java.srcDir(dir)
+      configurations.named(compileOnlyConfigurationName) {
+        extendsFrom(compileOnly)
+      }
+    }
   }
-}
 
 dependencies {
   compileOnly(gradleApi())
