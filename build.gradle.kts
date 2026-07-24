@@ -28,6 +28,7 @@ rootDir.listFiles().orEmpty()
 
 dependencies {
   compileOnly(gradleApi())
+  compileOnly(final.r8)
 
   // Add all AGP dependencies but the AGP itself.
   configurations.detachedConfiguration(create(final.agp.get()))
