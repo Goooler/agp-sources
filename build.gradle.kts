@@ -29,6 +29,7 @@ rootDir.listFiles().orEmpty()
 dependencies {
   compileOnly(gradleApi())
   compileOnly(final.agp)
+  compileOnly(final.bundletool)
 }
 
 // Anchor task.
