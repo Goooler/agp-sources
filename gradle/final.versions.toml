@@ -3,3 +3,4 @@
 [libraries]
 agp = "com.android.tools.build:gradle:9.3.1"
 bundletool = "com.android.tools.build:bundletool:1.18.3"
+guava = "com.google.guava:guava:33.6.0-jre"

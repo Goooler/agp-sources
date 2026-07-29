@@ -30,6 +30,7 @@ dependencies {
   compileOnly(gradleApi())
   compileOnly(final.agp)
   compileOnly(final.bundletool)
+  compileOnly(final.guava)
 }
 
 // Anchor task.
