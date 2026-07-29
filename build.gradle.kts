@@ -28,18 +28,7 @@ rootDir.listFiles().orEmpty()
 
 dependencies {
   compileOnly(gradleApi())
-
-  // Add all AGP dependencies but the AGP itself.
-  configurations.detachedConfiguration(create(final.agp.get()))
-    .resolvedConfiguration.resolvedArtifacts
-    .map { it.moduleVersion.id }
-    .filterNot { it.group.startsWith(agpGroupPrefix) }
-    .map(ModuleVersionIdentifier::toString)
-    .sorted()
-    .forEach { notation ->
-      logger.lifecycle("Compile only on: $notation")
-      compileOnly(notation)
-    }
+  compileOnly(final.agp)
 }
 
 // Anchor task.
