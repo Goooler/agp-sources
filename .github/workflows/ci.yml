@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: gradle/actions/setup-gradle@v6
-      - run: ./gradlew build dumpAgpSources
+      - run: ./gradlew build
 
   dump-sources:
     runs-on: ubuntu-latest
