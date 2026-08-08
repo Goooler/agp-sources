@@ -102,6 +102,8 @@ listOf(
 
 /**
  * Replacement of [Copy], which defers the source and destination configurations.
+ *
+ * TODO: https://github.com/gradle/gradle/pull/38047
  */
 @CacheableTask
 abstract class DumpSources @Inject constructor(
