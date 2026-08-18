@@ -33,7 +33,7 @@ jobs:
           client-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
       # TODO: https://github.com/peter-evans/create-pull-request/issues/4111
-      - uses: goooler/create-pull-request@a6ce27dbae568ca4608156da749e7f02f4ed1e4d
+      - uses: goooler/create-pull-request@aecdddbc61297db3dc7dd1e4039837f97c34d273
         id: create-pull-request
         with:
           commit-message: |
