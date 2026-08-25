@@ -41,7 +41,7 @@ fun configureAndroidTestEngine(
   val globalConfig = creationConfig.global
   val testedConfig = (creationConfig as? DeviceTestCreationConfig)?.mainVariant
 
-  val androidTestEngineVersion = if (Version.IS_AGP_RELEASE_BRANCH) "0.1.0-alpha02" else "0.1.0-dev"
+  val androidTestEngineVersion = if (Version.IS_AGP_RELEASE_BRANCH) "1.0.1" else "1.0.1-dev"
 
   task.classpath =
     creationConfig.services.fileCollection().also {
