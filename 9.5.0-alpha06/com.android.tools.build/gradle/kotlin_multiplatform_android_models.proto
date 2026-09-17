@@ -1,0 +1,191 @@
+/*
+ * Copyright 2023 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+
+import "ide_models.proto";
+
+option java_multiple_files = true;
+option java_package = "com.android.kotlin.multiplatform.models";
+option java_outer_classname = "KotlinMultiplatformAndroidModelsProto";
+
+message AndroidTarget {
+    // Version of the android gradle plugin.
+    optional string agp_version = 1;
+
+    // The gradle path of the module.
+    optional string project_path = 2;
+
+    // The gradle build folder of the project.
+    optional File build_dir = 3;
+
+    // The boot classpath matching the compile target. This is typically android.jar plus
+    // other optional libraries.
+    repeated File boot_classpath = 4;
+
+    // The instrumented test info if enabled.
+    optional TestInfo test_info = 5;
+
+    // The android gradle plugin flags for this project.
+    optional AndroidGradlePluginProjectFlags flags = 6;
+
+    // The lint jars that this module uses to run extra lint checks on this project.
+    // This is the resolution of the `lintCheck` configuration.
+    repeated File lint_checks_jars = 7;
+
+    // Whether core library desugaring is enabled, false otherwise.
+    optional bool is_core_library_desugaring_enabled = 8;
+
+    // Returns desugar.json configuration files for library desugaring, or empty when library
+    // desugaring is not enabled. Currently, there would only be one desugar.json file for the
+    // entire project, but could be more in the future if r8 team decides to publish more.
+    repeated File desugar_lib_config = 9;
+
+    // Returns the optional group-id of the artifact represented by this project.
+    optional string group_id = 10;
+
+    // The build tools version used by this module.
+    optional string build_tools_version = 11;
+
+    // Files listing any D8 backported desugared methods or core library desugared methods for this
+    // artifact.
+    repeated File desugared_methods_files = 12;
+
+    // The build ID (directory containing the settings file) of the root build of this project.
+    optional File root_build_id = 13;
+
+    // The build ID (directory containing the settings file) of the (included) build containing this
+    // project.
+    optional File build_id = 14;
+
+    // Whether java compilation is enabled.
+    optional bool with_java = 15;
+
+    // The prefix to be used by Android Studio for editor features to avoid resource name collisions
+    optional string resource_prefix = 16;
+}
+
+// Sources included in a kotlin multiplatform sourceSet.
+message SourceProvider {
+    optional File manifest_file = 1;
+}
+
+// Generated sources included in a kotlin multiplatform compilation.
+message GeneratedSources {
+    repeated File source_folders = 1;
+}
+
+// The info of the main variant of the android kotlin multiplatform target.
+message MainVariantInfo {
+    optional string namespace = 1;
+
+    // The compilation target as a string. This is the full extended target hash string.
+    optional string compile_sdk_target = 2;
+
+    // The min SDK version of this artifact.
+    optional AndroidVersion min_sdk_version = 3;
+
+    // The max SDK version of this artifact.
+    optional int32 max_sdk_version = 4;
+
+    // Specifies the ProGuard configuration files that the plugin should use.
+    // There are two ProGuard rules files that ship with the Android plugin and are used by
+    // default:
+    //   * proguard-android.txt
+    //   * proguard-android-optimize.txt
+    // `proguard-android-optimize.txt` is identical to `proguard-android.txt`,
+    // except with optimizations enabled.
+    repeated File proguard_files = 5;
+
+    // The collection of proguard rule files for consumers of the library to use.
+    repeated File consumer_proguard_files = 6;
+
+    // Whether code shrinking is enabled.
+    optional bool minification_enabled = 7;
+
+    // Folders containing assets generated during the build and should be included in the main AAR.
+    repeated File generated_asset_folders = 8;
+
+    // Folders containing resources generated during the build and should be included in the main AAR.
+    repeated File generated_resource_folders = 9;
+}
+
+// The info of the unit test component of the android kotlin multiplatform target.
+message UnitTestInfo {
+    optional string namespace = 1;
+
+    // Path to the mockable platform generated jar if present.
+    optional File mockable_platform_jar = 2;
+
+    // name of the gradle task that runs the unit tests.
+    optional string unit_test_task_name = 3;
+}
+
+// The info of the instrumented test component of the android kotlin multiplatform target.
+message InstrumentedTestInfo {
+    optional string namespace = 1;
+    optional string test_instrumentation_runner = 2;
+    map<string, string> test_instrumentation_runner_arguments = 3;
+
+    // The signing config used to sign the test apk.
+    optional SigningConfig signing_config = 4;
+
+    // Returns the absolute path for the listing file that will get updated after each build. The
+    // model file will contain deployment related information like applicationId, list of APKs.
+    optional File assemble_task_output_listing_file = 5;
+
+    // Folders containing assets generated during the build and should be included in the test APK.
+    repeated File generated_asset_folders = 6;
+
+    // Folders containing resources generated during the build and should be included in the test APK.
+    repeated File generated_resource_folders = 7;
+}
+
+message AndroidCompilation {
+    // The type of the compilation.
+    optional CompilationType type = 1;
+    // The info of the main variant, will be available iff compilation type is MAIN.
+    optional MainVariantInfo main_info = 2;
+    // The info of the unit test component, will be available iff compilation type is UNIT_TEST.
+    optional UnitTestInfo unit_test_info = 3;
+    // The info of the instrumented test component, will be available iff compilation type is INSTRUMENTED_TEST.
+    optional InstrumentedTestInfo instrumented_test_info = 4;
+    // The name of the default sourceSet of the compilation.
+    optional string default_source_set_name = 5;
+    // The gradle assemble task name.
+    optional string assemble_task_name = 6;
+    // The kotlin gradle compilation task name.
+    optional string kotlin_compile_task_name = 7;
+    // Extra compiled bytecode output folders (for example javac output when java enabled)
+    repeated File extra_classes_folders = 8;
+    // Folders containing generated source files.
+    repeated File generated_source_folders = 9;
+
+    enum CompilationType {
+        MAIN = 0;
+        UNIT_TEST = 1;
+        INSTRUMENTED_TEST = 2;
+    }
+}
+
+message AndroidSourceSet {
+    optional SourceProvider source_provider = 1;
+}
+
+// Extra information to identify a dependency that is outgoing from an android kotlin sourceSet.
+message DependencyInfo {
+    optional Library library = 1;
+}
