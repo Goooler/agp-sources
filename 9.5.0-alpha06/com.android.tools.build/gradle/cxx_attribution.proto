@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+option java_package = "com.android.build.gradle.internal.cxx.attribution";
+option java_multiple_files = true;
+
+/**
+ * Represents a single C/C++ build transformation. Typically, these are
+ * compile from .cpp to .o and link from .o to .so. The only way to
+ * differentiate these is by looking at output_file.
+ * The ultimate source of this information is the .ninja_log file.
+ */
+message BuildTaskAttribution {
+    // The output file, usually .o or .so, created by the build step
+    string output_file = 1;
+    // Start time offset in milliseconds of this single build task.
+    // Relative to BuildTaskAttribution#build_start_time_ms.
+    int32 start_time_offset_ms = 3;
+    // End time offset in milliseconds
+    int32 end_time_offset_ms = 4;
+}
+
+/**
+ * Same as [BuildTaskAttribution] but with string-ID fields in the place
+ * of strings. This is the value that is stored in the structured log
+ * file, but it can be inflated to a [BuildTaskAttribution] by the log
+ * reader.
+ */
+message EncodedBuildTaskAttribution {
+    int32 output_file_id = 1;
+    int32 start_time_offset_ms = 3;
+    int32 end_time_offset_ms = 4;
+}
+
+/**
+ * Unique identifier containing module, variant, and ABI.
+ */
+message AttributionKey {
+    string module = 1;
+    string variant = 2;
+    string abi = 3;
+}
+
+/**
+ * Same as [EncodedAttributionKey] but with string-ID fields in the place
+ * of strings. This is the value that is stored in the structured log
+ * file, but it can be inflated to a [EncodedAttributionKey] by the log
+ * reader.
+ */
+message EncodedAttributionKey {
+    int32 module_id = 1;
+    int32 variant_id = 2;
+    int32 abi_id = 3;
+}
+
+/**
+ * A collection of build attributes from a single build.
+ */
+message BuildTaskAttributions {
+    // The module, variant, and ABI being built.
+    AttributionKey key = 1;
+    // The build home folder
+    string build_folder = 2;
+    // The libraries that are being built
+    repeated string library = 3;
+    // The line number from the ninja log to read first
+    int32 ninja_log_start_line = 4;
+    // The start time of the build itself
+    int64 build_start_time_ms = 5;
+    // The build tasks for this build
+    repeated BuildTaskAttribution attribution = 6;
+}
+
+/**
+ * Same as [BuildTaskAttributions] but with string-ID fields in the place
+ * of strings. This is the value that is stored in the structured log
+ * file, but it can be inflated to a [BuildTaskAttributions] by the log
+ * reader.
+ */
+message EncodedBuildTaskAttributions {
+    EncodedAttributionKey key = 1;
+    int32 build_folder_id = 2;
+    repeated int32 library_id = 3;
+    int32 ninja_log_start_line = 4;
+    int64 build_start_time_ms = 5;
+    repeated EncodedBuildTaskAttribution attribution = 6;
+}
