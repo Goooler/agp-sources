@@ -64,34 +64,31 @@ listOf(
     description = "Dumps AGP $version sources into the output directory"
 
     outputDirectory = layout.projectDirectory.dir(version)
-    inputSources = provider {
-      val componentIds = configuration
-        .incoming
-        .resolutionResult
-        .allDependencies
-        .filterIsInstance<ResolvedDependencyResult>()
-        .map { it.selected.id }
-        .filterIsInstance<ModuleComponentIdentifier>()
-        .filter { it.group.startsWith(agpGroupPrefix) }
-        .toSet()
-
-      dependencies
-        .createArtifactResolutionQuery()
-        .forComponents(componentIds)
-        .withArtifacts(JvmLibrary::class, SourcesArtifact::class)
-        .execute()
-        .resolvedComponents
-        .flatMap { it.getArtifacts(SourcesArtifact::class) }
-        .filterIsInstance<ResolvedArtifactResult>()
-        .map {
-          val id = it.id.componentIdentifier as ModuleComponentIdentifier
+    inputSources = configuration.incoming
+      .artifactView {
+        withVariantReselection()
+        attributes {
+          attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
+          attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.DOCUMENTATION))
+          attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))
+          attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType.SOURCES))
+        }
+        componentFilter { id ->
+          (id as? ModuleComponentIdentifier)?.group?.startsWith(agpGroupPrefix) == true
+        }
+        lenient(true)
+      }
+      .artifacts.resolvedArtifacts
+      .map { artifacts ->
+        artifacts.map { artifact ->
+          val id = artifact.id.componentIdentifier as ModuleComponentIdentifier
           DumpSources.Resolved(
             group = id.group,
             module = id.module,
-            file = it.file,
+            file = artifact.file,
           )
         }
-    }
+      }
   }
 
   // Hook anchor task to all version-specific tasks.
@@ -108,7 +105,7 @@ abstract class DumpSources @Inject constructor(
   private val archiveOperations: ArchiveOperations,
   private val fileSystemOperations: FileSystemOperations,
 ) : DefaultTask() {
-  @get:Input
+  @get:Nested
   abstract val inputSources: ListProperty<Resolved>
 
   @get:OutputDirectory
@@ -133,8 +130,8 @@ abstract class DumpSources @Inject constructor(
    * Serializable copy of [ResolvedArtifactResult] for CC support.
    */
   data class Resolved(
-    val group: String,
-    val module: String,
-    val file: File,
+    @get:Input val group: String,
+    @get:Input val module: String,
+    @get:InputFile @get:PathSensitive(PathSensitivity.NONE) val file: File,
   ) : Serializable
 }
