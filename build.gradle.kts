@@ -60,7 +60,7 @@ listOf(
 ).forEach { agp ->
   val dependency = agp.get()
   val version = requireNotNull(dependency.version)
-  val configuration = configurations.create("agp-$version") { dependencies.add(dependency) }
+  val configuration = configurations.detachedConfiguration(dependency)
 
   val dumpSources = tasks.register<DumpSources>("dump-$version-sources") {
     group = "documentation"
