@@ -26,21 +26,23 @@ rootDir.listFiles().orEmpty()
     }
   }
 
+val defaultAgpDependencies = configurations.register("defaultAgpDependencies") {
+  dependencies.add(final.agp.get())
+  resolutionStrategy.activateDependencyLocking()
+}
+
 dependencies {
   compileOnly(gradleApi())
   compileOnly(final.bundletool)
 
-  // Add all AGP dependencies but the AGP itself.
-  configurations.detachedConfiguration(create(final.agp.get()))
-    .resolvedConfiguration.resolvedArtifacts
-    .map { it.moduleVersion.id }
-    .filterNot { it.group.startsWith(agpGroupPrefix) }
-    .map(ModuleVersionIdentifier::toString)
-    .sorted()
-    .forEach { notation ->
-      logger.lifecycle("Compile only on: $notation")
-      compileOnly(notation)
-    }
+  defaultAgpDependencies.get()
+    .incoming
+    .artifactView {
+      componentFilter { id ->
+        // Add all AGP dependencies but the AGP itself.
+        !(id as ModuleComponentIdentifier).group.startsWith(agpGroupPrefix)
+      }
+    }.files.let(::compileOnly)
 }
 
 // Anchor task.
@@ -74,7 +76,7 @@ listOf(
           attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType.SOURCES))
         }
         componentFilter { id ->
-          (id as? ModuleComponentIdentifier)?.group?.startsWith(agpGroupPrefix) == true
+          (id as ModuleComponentIdentifier).group.startsWith(agpGroupPrefix)
         }
         lenient(true)
       }
