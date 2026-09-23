@@ -33,6 +33,7 @@ val defaultAgpDependencies = configurations.register("defaultAgpDependencies") {
 
 dependencies {
   compileOnly(gradleApi())
+  // TODO: https://github.com/google/bundletool/issues/400
   compileOnly(final.bundletool)
 
   defaultAgpDependencies.get()
