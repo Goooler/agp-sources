@@ -75,7 +75,7 @@ listOf(
           attribute(DocsType.DOCS_TYPE_ATTRIBUTE, objects.named(DocsType.SOURCES))
         }
         componentFilter { id ->
-          (id as? ModuleComponentIdentifier)?.group?.startsWith(agpGroupPrefix) == true
+          (id as ModuleComponentIdentifier).group.startsWith(agpGroupPrefix)
         }
         lenient(true)
       }
