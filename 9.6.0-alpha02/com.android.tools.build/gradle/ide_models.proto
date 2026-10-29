@@ -1,0 +1,336 @@
+/*
+ * Copyright 2023 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.android.builder.model.proto.ide";
+option java_outer_classname = "IdeModelsProto";
+
+// Representation of a path.
+message File {
+    optional string absolute_path = 1;
+}
+
+// Information for test Artifacts.
+// This includes both Android test components in app/lib modules, and the main component
+// in test modules.
+message TestInfo {
+    optional bool animations_disabled = 1;
+    optional Execution execution = 2;
+
+    // Returns a list of additional APKs that need to installed on the device for this artifact to
+    // work correctly.
+    // For test artifacts, these will be "buddy APKs" from the `androidTestUtil`
+    // configuration.
+    repeated File additional_runtime_apks = 3;
+
+    // Returns the name of the task used to run instrumented tests or null if the variant is not a
+    // test variant.
+    optional string instrumented_test_task_name = 4;
+
+    // Indicates test should be executed within the Private Compute Core on-device environment.
+    optional bool instrument_in_private_compute_core = 5;
+
+    enum Execution {
+        // On device orchestration is not used in this case.
+        HOST = 0;
+        // On device orchestration is used.
+        ANDROID_TEST_ORCHESTRATOR = 1;
+        // On device orchestration is used, with androidx class names.
+        ANDROIDX_TEST_ORCHESTRATOR = 2;
+    }
+}
+
+// Represents various AGP project-wide flags.
+// This class is only for use in the Gradle tooling model. On the IDE side use
+// `IdeAndroidGradlePluginProjectFlags` which provides an interpreted view of the flags.
+message AndroidGradlePluginProjectFlags {
+    repeated BooleanFlagValue boolean_flag_values = 1;
+
+    /**
+     * Boolean flags for behavior changes in AGP that Android Studio needs to know about.
+     *
+     * Studio uses the legacy default for AGPs that do not specify that flag.
+     *
+     * Flags **must** never be removed from here. This is to avoid issues when the
+     * current version of studio fetches models from a project that has a legacy flag set. They can
+     * be marked as `@Deprecated` and the getter removed from `IdeAndroidGradlePluginProjectFlags`
+     */
+    enum BooleanFlag {
+        // Whether the R class in applications and dynamic features has constant IDs.
+        // If they are constant they can be inlined by the java compiler and used in places that
+        // require constants such as annotations and cases of switch statements.
+        APPLICATION_R_CLASS_CONSTANT_IDS = 0;
+
+        // Whether the R class in instrumentation tests has constant IDs.
+        // If they are constant they can be inlined by the java compiler and used in places that
+        // require constants such as annotations and cases of switch statements.
+        TEST_R_CLASS_CONSTANT_IDS = 1;
+
+        // Whether the R class generated for this project is transitive.
+        // If it is transitive it will contain all of the resources defined in its transitive
+        // dependencies alongside those defined in this project. If non-transitive it will only
+        // contain the resources defined in this project.
+        TRANSITIVE_R_CLASS = 2;
+
+        // Whether the jetpack Compose feature is enabled for this project.
+        JETPACK_COMPOSE = 3;
+
+        // Whether the ML model binding feature is enabled for this project.
+        ML_MODEL_BINDING = 4;
+
+        // Whether the Android Test Platform is enabled for this project.
+        UNIFIED_TEST_PLATFORM = 5;
+
+        // Whether AndroidX libraries should be used instead of legacy support libraries.
+        USE_ANDROID_X = 6;
+
+        // Whether VCS metadata file is generated in APK/Bundle for this project.
+        ENABLE_VCS_INFO = 7;
+
+        // Whether Android resources are enabled in this project
+        BUILD_FEATURE_ANDROID_RESOURCES = 8;
+
+        // Whether constraints for library components are disabled
+        EXCLUDE_LIBRARY_COMPONENTS_FROM_CONSTRAINTS = 9;
+
+        // Whether data binding is enabled for this library (never expected in KMP)
+        DATA_BINDING_ENABLED = 10;
+
+        // Whether to generate manifest classes
+        GENERATE_MANIFEST_CLASS = 11;
+
+        // Whether the old variant API is used in this project
+        OLD_VARIANT_API_IN_USE = 12;
+
+        // Whether aligning compile to runtime constraints for all components is enabled
+        ENABLE_COMPILE_RUNTIME_CLASSPATH_ALIGNMENT = 13;
+
+        // Whether built-in Kotlin is enabled by default in this Gradle build
+        // Doesn't directly affect KMP, but useful to have here for when Studio is adding a non-KMP
+        // Android application or library to a build with only KMP subprojects.
+        BUILT_IN_KOTLIN_DEFAULT_ENABLED = 14;
+    }
+
+    message BooleanFlagValue {
+        BooleanFlag flag = 1;
+        bool value = 2;
+    }
+}
+
+message AndroidVersion {
+    int32 api_level = 1;
+    string codename = 2;
+}
+
+message SigningConfig {
+    // Returns the name of the Signing config
+    optional string name = 1;
+
+    // The keystore file.
+    optional File store_file = 2;
+
+    // The keystore password.
+    optional string store_password = 3;
+
+    // The key alias name.
+    optional string key_alias = 4;
+
+    // The key password.
+    optional string key_password = 5;
+
+    // Signing using JAR Signature Scheme (aka v1 scheme) is enabled.
+    optional bool enable_v1_signing = 6;
+
+    // Signing using APK Signature Scheme v2 (aka v2 scheme) is enabled.
+    optional bool enable_v2_signing = 7;
+
+    // Signing using JAR Signature Scheme v3 (aka v3 scheme) is enabled.
+    optional bool enable_v3_signing = 8;
+
+    // Signing using JAR Signature Scheme v4 (aka v4 scheme) is enabled.
+    optional bool enable_v4_signing = 9;
+
+    // Whether the config is fully configured for signing.
+    // i.e. all the required information are present.
+    bool is_signing_ready = 10;
+}
+
+// Basic information about dependency components
+message ComponentInfo {
+    // The build type attribute of this component.
+    // Null if the component does not have Android variants
+    optional string build_type = 1;
+    // The product flavor attributes of this component, keyed by flavor dimension name.
+    // May be empty if the component does not have Android product flavors.
+    map<string, string> product_flavors = 2;
+    // The list of attributes associated with the component.
+    // Build types and product flavor attributes are handled explicitly in [buildType] and
+    // [productFlavors], so they are not included here
+    map<string, string> attributes = 3;
+    // The list of capabilities associated with the component
+    repeated string capabilities = 4;
+    // Indicates whether this component (library or module) is a test fixtures component (i.e. has
+    // a test fixtures capability).
+    bool is_test_fixtures = 5;
+}
+message ProjectInfo {
+    optional ComponentInfo component_info = 1;
+    // The build id.
+    optional string build_id = 2;
+    // The project path.
+    optional string project_path = 3;
+}
+
+// Information to identify an external library dependencies
+message LibraryInfo {
+    optional ComponentInfo component_info = 1;
+    optional string group = 2;
+    optional string name = 3;
+    optional string version = 4;
+}
+
+// The type of Library dependency.
+enum LibraryType {
+    // The dependency is an external dependency with no artifact, but it may depend on other
+    // libraries.
+    NO_ARTIFACT_FILE = 0;
+    // The dependency is a sub-project of the build.
+    PROJECT = 1;
+    // The dependency is an external Android Library (AAR)
+    ANDROID_LIBRARY = 2;
+    // The dependency is an external Java Library (JAR)
+    JAVA_LIBRARY = 3;
+    // The dependency is an external dependency with no artifact, pointing to a different artifact
+    // (via Gradle's available-at feature, and possibly via POM's relocation feature.)
+    RELOCATED = 4;
+}
+
+// Data for Android external Libraries
+message AndroidLibraryData {
+    // The location of the manifest file.
+    optional File manifest = 1;
+    // The list of jar files for compilation.
+    repeated File compile_jar_files = 2;
+    // The list of jar files for runtime/packaging.
+    repeated File runtime_jar_files = 3;
+    // The android resource folder.
+    //
+    // The folder may not exist.
+    optional File res_folder = 4;
+    // The namespaced resources static library (res.apk).
+    optional File res_static_library = 5;
+    // The assets folder.
+    //
+    // The folder may not exist.
+    optional File assets_folder = 6;
+
+    // The jni libraries folder.
+    //
+    // The folder may not exist.
+    optional File jni_folder = 7;
+
+    // The AIDL import folder
+    //
+    // The folder may not exist.
+    optional File aidl_folder = 8;
+
+    // The RenderScript import folder
+    //
+    // The folder may not exist.
+    optional File renderscript_folder = 9;
+
+    // The proguard file rule.
+    //
+    // The file may not exist.
+    optional File proguard_rules = 10;
+
+    // the zip file with external annotations
+    //
+    // The file may not exist.
+    optional File external_annotations = 11;
+
+    // The file listing the public resources
+    //
+    // The file may not exist.
+    optional File public_resources = 12;
+
+    // The symbol list file
+    //
+    // The file may not exist.
+    optional File symbol_file = 13;
+}
+
+// Represent a variant/module/artifact dependency.
+message Library {
+    // A Unique key representing the library, and allowing to match it with [GraphItem] instances
+    optional string key = 1;
+
+    // The type of the dependency.
+    optional LibraryType type = 2;
+
+    // Returns the project info to uniquely identify it (and its variant)
+    //
+    // Only valid for instances where [type] is [LibraryType.PROJECT]. It is null in other cases.
+    optional ProjectInfo project_info = 3;
+
+    // Returns the external library info to uniquely identify it (and its variant)
+    //
+    // Only valid for instances where [type] is [LibraryType.ANDROID_LIBRARY], or
+    // [LibraryType.JAVA_LIBRARY]. It is null in other cases.
+    optional LibraryInfo library_info = 4;
+
+    // The artifact location.
+    //
+    // Only valid for instances where [type] is [LibraryType.JAVA_LIBRARY] or
+    // [LibraryType.ANDROID_LIBRARY]
+    optional File artifact = 5;
+
+    // The jar containing custom lint checks for consumers to use. This is filled by the
+    // lintPublish configuration.
+    //
+    // The file may not exist.
+    //
+    // Only valid for instances where [type] is [LibraryType.ANDROID_LIBRARY]
+    optional File lint_jar = 6;
+
+    // The jar containing the sources for the [artifact]
+    //
+    // Only valid for instances where [type] is [LibraryType.JAVA_LIBRARY] or
+    // [LibraryType.ANDROID_LIBRARY]
+    optional File src_jar = 7;
+
+    // The jar containing the documentation for the [artifact]
+    //
+    // Only valid for instances where [type] is [LibraryType.JAVA_LIBRARY] or
+    // [LibraryType.ANDROID_LIBRARY]
+    optional File doc_jar = 8;
+
+    // The jar containing samples for the [artifact]
+    //
+    // Only valid for instance where [type] is [LibraryType.JAVA_LIBRARY] or
+    // [LibraryType.ANDROID_LIBRARY]
+    optional File samples_jar = 9;
+
+    // Data for libraries of type [LibraryType.ANDROID_LIBRARY]. It is null in other cases.
+    optional AndroidLibraryData android_library_data = 10;
+
+    // Provides the sources for the [artifact] including regular source and sample source
+    // Only valid for instances where [type] is [LibraryType.JAVA_LIBRARY] or
+    // [LibraryType.ANDROID_LIBRARY]
+    repeated File src_jars = 11;
+}
