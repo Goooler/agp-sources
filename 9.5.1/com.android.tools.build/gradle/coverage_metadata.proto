@@ -1,0 +1,87 @@
+/*
+ * Copyright (C) 2026 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+syntax = "proto3";
+
+package android.tools.coverage.proto;
+
+option java_package = "com.android.tools.coverage.proto";
+option java_outer_classname = "CoverageMetadataProto";
+option optimize_for = LITE_RUNTIME;
+
+// Metadata for a specific source line within a basic block.
+message LineMetadata {
+  int32 line_number = 1;
+
+  // Number of DEX instructions associated with this specific line
+  // within the parent basic block.
+  uint32 instruction_count = 2;
+}
+
+// Metadata for a single basic block in the DEX.
+message BlockMetadata {
+  // Globally unique ID for this block (within the current test run).
+  uint32 block_id = 1;
+
+  // The specific source lines covered by this basic block.
+  // In production, we track instruction counts per line for maximum precision.
+  repeated LineMetadata lines = 2;
+
+  // The number of possible execution branches originating from this block.
+  // For example, a block ending in an 'if' will have 2 branches.
+  uint32 branch_count = 3;
+
+  // Unique block IDs of successor basic blocks in the control flow graph.
+  repeated uint32 successor_block_ids = 4;
+}
+
+// Metadata for a single method.
+message MethodMetadata {
+  string name = 1;
+
+  // The type descriptor (e.g., "(I)V") to handle method overloading.
+  string signature = 2;
+
+  repeated BlockMetadata blocks = 3;
+}
+
+// Metadata for a single class.
+message ClassMetadata {
+  // The internal JVM class name (e.g., "com/example/MainActivity").
+  string class_name = 1;
+
+  // The name of the source file (e.g., "MainActivity.kt").
+  string source_file = 2;
+
+  // The SourceDebugExtension (SMAP) string for Kotlin inline resolution.
+  string smap = 3;
+
+  repeated MethodMetadata methods = 4;
+}
+
+// Top-level container for all coverage metadata collected by the agent.
+message CoverageMetadata {
+  uint32 version = 1;
+  repeated ClassMetadata classes = 2;
+}
+
+// Execution data containing the actual hits recorded during the test run.
+message CoverageHits {
+  uint32 version = 1;
+
+  // A compact bitmask where bit 'i' is set if basic block ID 'i' was executed.
+  bytes hit_mask = 2;
+}
